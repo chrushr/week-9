@@ -71,7 +71,8 @@ Moving your mouse outside of the circle should remove the highlighting.
 
 // Global Variables
 
-var myRectangle;
+var myRectangle =[];
+
 
 // Initialize Leaflet Draw
 
@@ -89,11 +90,41 @@ map.addControl(drawControl);
 
 // Run every time Leaflet draw creates a new layer
 
-map.on('draw:created', function (e) {
+
+
+map.on('draw:created', function (e) {    //Check this out for more info on leaflet draw:  https://github.com/Leaflet/Leaflet.draw
+    console.log(e);
     var type = e.layerType; // The type of shape
     var layer = e.layer; // The Leaflet layer for the shape
     var id = L.stamp(layer); // The unique Leaflet ID for the layer
 
+    if(myRectangle.length){
+      _.each(myRectangle, function(shape){
+      map.removeLayer(shape);
+      });// if there are stuff showing on the current layer, remove the current layer
+      myRectangle=[];
+    }
+    myRectangle.push(layer.addTo(map))
+    var html = "<div data-leaflet-id="+id+"> <h1>Current ID: "+id+"</h1></div>"
+    $( "#shapes").empty()
+    $( "#shapes" ).append(html)
 
+});
+
+
+
+
+var myRectangles=[]
+
+map.on('draw:created', function (e) {    //Check this out for more info on leaflet draw:  https://github.com/Leaflet/Leaflet.draw
+    var type = e.layerType; // The type of shape
+    var layer = e.layer; // The Leaflet layer for the shape
+    var id = L.stamp(layer); // The unique Leaflet ID for the layer
+
+    myRectangles.push(layer.addTo(map))
+    var ids =[]
+    ids.push(id)
+    var html = "<div data-leaflet-id="+ids+"> <h1>Current ID: "+ids+"</h1></div>"
+    $( "#shapes" ).append(html)
 
 });

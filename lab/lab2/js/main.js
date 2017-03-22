@@ -53,6 +53,8 @@ ways to transform text into an address. For the lab, the simplest (unstructured)
 text-based 'search' is entirely appropriate. The win for structured search is that it
 is far less likely to return bogus results.
 
+mapzen-kPKY6gq
+
 To reiterate: you should experiment with this API and come to an understanding of how
 it works BEFORE writing code you expect to use it. This can be done in the console or
 in a REST client like Postman mentioned above.
@@ -72,9 +74,16 @@ option available: 'Optimized Route' (https://mapzen.com/documentation/mobility/o
 Once you're getting a valid (as best you can tell) response from the server, move
 to the next task.
 
+***********Find Coordinate: https://search.mapzen.com/v1/search?api_key=mapzen-kPKY6gq&text=Philadelphia
+
+
+turf.linestring()
+
 
 Task 3: Decode Mapzen's route response
 
+
+***********https://matrix.mapzen.com/optimized_route?json={"locations":[{"lat":40.042072,"lon":-76.306572},{"lat":39.992115,"lon":-76.781559}],"costing":"auto","directions_options":{"units":"miles"}}&api_key=
 Intrepid readers may have already discovered that Mapzen route responses are NOT
 in the familiar GeoJson format. Rather, they use a special encoding standardized
 by google to try and cut down on response sizes and response times. The relevant
@@ -84,7 +93,6 @@ Luckily for you, we've provided the logic to properly decode such shapes (copied
 from the documentation to decode.js). The string you'll have to decode will look
 something like this:
 
-`ee~jkApakppCmPjB}TfCuaBbQa|@lJsd@dF|Dl~@pBfb@t@bQ?tEOtEe@vCs@xBuEfNkGdPMl@oNl^eFxMyLrZoDlJ{JhW}JxWuEjL]z@mJlUeAhC}Tzi@kAv`...
 
 Note that the file `decode.js` is included, which introduces a function `decode`.
 If you pass the shape string to the `decode` function, it will return an array of
@@ -116,12 +124,60 @@ Task 6: (stretch) See if you can refocus the map to roughly the bounding box of 
 
 ===================== */
 
+
+var data=$.ajax('https://matrix.mapzen.com/optimized_route?json={"locations":[{"lat":39.990821,"lon":-75.168428},{"lat":40.730610,"lon":-73.935242}],"costing":"auto","directions_options":{"units":"miles"}}&api_key=mapzen-kPKY6gq')
+
+
+
+var emptyarray=[]
+
+data.done(function(d){
+  // var Pasre = .parse(d)
+  console.log(d)
+  var select = d.trip.legs[0].shape
+  var array = decode(select)
+  console.log(array)
+
+  var flip = function(array){
+    _.map(array, function(arr){
+    emptyarray.push( arr.reverse())
+    })
+  }
+  flip(array)
+
+  var line= turf.lineString(emptyarray)
+
+  L.geoJSON(line, {
+    style: function (feature) {
+        return {color: "red"}
+      }
+    }).addTo(map)
+
+})
+
+
+// var array= decode(data)
+
 var state = {
   position: {
     marker: null,
-    updated: null
+    updated: null,
+    coords: {
+      latitude: 39.990821,
+      longitude: -75.168428
+    }
   }
 };
+
+ // 40.730610, -73.935242
+// var newarray=[]
+// var flip = _.each(array, function(array){
+//   console.log(array)
+//   var fliparray = [array[1],array[0]]
+//   newarray.push(fliparray)
+// })
+
+//.reverse()can reverse lat long
 
 /* We'll use underscore's `once` function to make sure this only happens
  *  one time even if weupdate the position later
@@ -169,7 +225,4 @@ $(document).ready(function() {
     var dest = $('#dest').val();
     console.log(dest);
   });
-
-});
-
-
+})
